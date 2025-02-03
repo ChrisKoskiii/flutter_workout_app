@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_workout_app/screens/home_screen.dart';
 import 'package:flutter_workout_app/screens/history_screen.dart';
+import 'package:flutter_workout_app/screens/workout_details_screen.dart';
+import 'package:flutter_workout_app/screens/workout_start_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -15,7 +17,6 @@ class _MainScreenState extends State<MainScreen> {
   static const List<Widget> _widgetOptions = <Widget>[
     HomeScreen(),
     HistoryScreen(),
-    // Add your GymScreen here if you have one
   ];
 
   void _onItemTapped(int index) {
@@ -29,7 +30,15 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       body: IndexedStack(
         index: _selectedIndex,
-        children: _widgetOptions,
+        children: _widgetOptions.map((Widget screen) {
+          return Navigator(
+            onGenerateRoute: (RouteSettings settings) {
+              return MaterialPageRoute(
+                builder: (context) => screen,
+              );
+            },
+          );
+        }).toList(),
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const [
