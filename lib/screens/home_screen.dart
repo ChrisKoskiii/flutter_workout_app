@@ -14,11 +14,11 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  void _navigateToWorkoutStart(BuildContext context, WorkoutTemplate workout) {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => WorkoutStartScreen(workout: workout)),
-    );
-  }
+  // void _navigateToWorkoutStart(BuildContext context, WorkoutTemplate workout) {
+  //   Navigator.of(context).push(
+  //     MaterialPageRoute(builder: (context) => WorkoutStartScreen(workout: workout)),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {

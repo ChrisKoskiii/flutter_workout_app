@@ -38,7 +38,7 @@ class CompletedWorkoutService {
           .collection('completed_workouts')
           .get();
       return querySnapshot.docs.map((doc) {
-        return CompletedWorkout.fromMap(doc.data() as Map<String, dynamic>);
+        return CompletedWorkout.fromMap(doc.data());
       }).toList();
     } catch (error) {
       throw Exception('Failed to fetch completed workouts: $error');

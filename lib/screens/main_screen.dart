@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_workout_app/screens/home_screen.dart';
 import 'package:flutter_workout_app/screens/history_screen.dart';
-import 'package:flutter_workout_app/screens/workout_details_screen.dart';
-import 'package:flutter_workout_app/screens/workout_start_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});

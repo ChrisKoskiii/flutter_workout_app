@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_workout_app/screens/workout_details_screen.dart';
 import 'package:flutter_workout_app/models/workout_template.dart';
 
 class WorkoutCard extends StatelessWidget {
