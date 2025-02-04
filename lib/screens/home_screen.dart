@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_workout_app/models/sample_workouts.dart';
 import 'package:flutter_workout_app/widgets/workout_card.dart';
 import 'package:flutter_workout_app/screens/workout_details_screen.dart';
-import 'package:flutter_workout_app/screens/workout_start_screen.dart';
 import 'package:flutter_workout_app/models/workout_template.dart';
 
 class HomeScreen extends StatelessWidget {
