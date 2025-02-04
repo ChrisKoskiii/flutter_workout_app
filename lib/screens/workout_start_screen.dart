@@ -5,7 +5,6 @@ import 'package:flutter_workout_app/screens/home_screen.dart';
 import 'package:flutter_workout_app/services/completed_workout_service.dart';
 import 'package:logging/logging.dart';
 import '../models/workout_template.dart';
-import '../../models/exercise.dart';
 
 class WorkoutStartScreen extends StatefulWidget {
   final WorkoutTemplate workout;
@@ -18,19 +17,45 @@ class WorkoutStartScreen extends StatefulWidget {
 
 class WorkoutStartScreenState extends State<WorkoutStartScreen> {
   final Logger _logger = Logger('WorkoutStartScreen');
+  final Map<String, List<TextEditingController>> _controllers = {};
+
+  @override
+  void initState() {
+    super.initState();
+    for (var exercise in widget.workout.exercises) {
+      _controllers[exercise.name] = List.generate(
+        exercise.sets,
+        (index) => TextEditingController(text: exercise.reps.toString()),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    for (var controllers in _controllers.values) {
+      for (var controller in controllers) {
+        controller.dispose();
+      }
+    }
+    super.dispose();
+  }
 
   void _saveCompletedWorkout() async {
     final completedWorkout = CompletedWorkout(
       id: widget.workout.title + DateTime.now().toIso8601String(),
       title: widget.workout.title,
       completedAt: DateTime.now(),
-      exercises: widget.workout.exercises, // Modify if needed for reps/sets
+      exercises: widget.workout.exercises.map((exercise) {
+        final reps = _controllers[exercise.name]!
+            .map((controller) => int.tryParse(controller.text) ?? exercise.reps)
+            .toList();
+        return exercise.copyWith(reps: reps.isNotEmpty ? reps[0] : null);
+      }).toList(),
     );
 
     final service = CompletedWorkoutService();
 
     try {
-      _logger.info('Attempting to save workout');
       await service.saveCompletedWorkout(completedWorkout).timeout(
         const Duration(seconds: 10),
         onTimeout: () {
@@ -55,7 +80,7 @@ class WorkoutStartScreenState extends State<WorkoutStartScreen> {
     }
   }
 
-  void _showFinishWorkoutDialog(BuildContext context) {
+  void _showFinishWorkoutDialog() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -84,61 +109,88 @@ class WorkoutStartScreenState extends State<WorkoutStartScreen> {
     );
   }
 
+  void _hideKeyboard() {
+    FocusScope.of(context).unfocus();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Perform ${widget.workout.title}"),
-        centerTitle: true,
+        title: Text(widget.workout.title),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.keyboard_hide),
+            onPressed: _hideKeyboard,
+          ),
+        ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView.builder(
-                itemCount: widget.workout.exercises.length,
-                itemBuilder: (context, index) {
-                  final Exercise exercise = widget.workout.exercises[index];
-                  return Container(
-                    margin: const EdgeInsets.symmetric(vertical: 8.0),
-                    padding: const EdgeInsets.all(12.0),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      border: Border.all(color: Colors.grey[300]!),
-                      borderRadius: BorderRadius.circular(12.0),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          exercise.name,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
+      body: GestureDetector(
+        onTap: _hideKeyboard,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: ListView.builder(
+            itemCount: widget.workout.exercises.length,
+            itemBuilder: (context, index) {
+              final exercise = widget.workout.exercises[index];
+              return Card(
+                margin: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        exercise.name,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          "Reps: ${exercise.reps}",
-                          style: const TextStyle(fontSize: 14),
-                        ),
-                        Text(
-                          "Sets: ${exercise.sets}",
-                          style: const TextStyle(fontSize: 14),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () => _showFinishWorkoutDialog(context),
-              child: const Text('Finish Workout'),
-            ),
-          ],
+                      ),
+                      const SizedBox(height: 8),
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: exercise.sets,
+                        itemBuilder: (context, setIndex) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4.0),
+                            child: Row(
+                              children: [
+                                Text('Set ${setIndex + 1}'),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: TextField(
+                                    controller: _controllers[exercise.name]![setIndex],
+                                    keyboardType: const TextInputType.numberWithOptions(
+                                      signed: false,
+                                      decimal: false,
+                                    ),
+                                    textInputAction: TextInputAction.done,
+                                    onEditingComplete: _hideKeyboard,
+                                    decoration: InputDecoration(
+                                      labelText: 'Reps',
+                                      hintText: exercise.reps.toString(),
+                                      border: const OutlineInputBorder(),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showFinishWorkoutDialog,
+        child: const Icon(Icons.check),
       ),
     );
   }

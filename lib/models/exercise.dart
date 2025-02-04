@@ -52,4 +52,16 @@ class Exercise {
       sets: map['sets'],
     );
   }
+
+    Exercise copyWith({String? name, String? description, String? equipment, String? targetBodyPart, String? exerciseType, int? sets, int? reps}) {
+    return Exercise(
+      name: name ?? this.name,
+      description: description ?? this.description,
+      equipment: equipment ?? this.equipment,
+      targetBodyPart: targetBodyPart ?? this.targetBodyPart,
+      exerciseType: exerciseType ?? this.exerciseType,
+      sets: sets ?? this.sets,
+      reps: reps ?? this.reps,
+    );
+  }
 }
